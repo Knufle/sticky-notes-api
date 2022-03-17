@@ -36,7 +36,7 @@ export default {
             description: string()
         })
 
-        await schema.validate(data, { abortEarly: false, strict: true });
+        await schema.validate(data, { abortEarly: false });
 
         const stickyNote = stickyNotesRepository.create(data);
 
