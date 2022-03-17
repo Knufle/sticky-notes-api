@@ -62,7 +62,7 @@ export default {
             description: string().required()
         });
 
-        await schema.validate(data, { abortEarly: false, strict: true });
+        await schema.validate(data, { abortEarly: false });
 
         stickyNote.title = title;
         stickyNote.description = description;
