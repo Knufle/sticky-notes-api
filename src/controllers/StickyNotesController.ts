@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { getRepository } from 'typeorm';
 import StickyNote from '../models/StickyNote';
 import stickyNoteView from '../views/sticky_notes_view';
-import * as Yup from 'yup';
+import { object, string, number } from 'yup';
 
 export default {
     async index(req: Request, res: Response) {
@@ -31,12 +31,12 @@ export default {
 
         const data = { title, description };
 
-        const schema = Yup.object().shape({
-            title: Yup.string().required(),
-            description: Yup.string()
+        const schema = object({
+            title: string().required(),
+            description: string()
         })
 
-        await schema.validate(data, { abortEarly: false });
+        await schema.validate(data, { abortEarly: false, strict: true });
 
         const stickyNote = stickyNotesRepository.create(data);
 
@@ -56,13 +56,16 @@ export default {
 
         const data = { id, title, description };
 
-        const schema = Yup.object().shape({
-            id: Yup.number().required(),
-            title: Yup.string().required(),
-            description: Yup.string().required()
+        const schema = object().shape({
+            id: number().required(),
+            title: string().required(),
+            description: string().required()
         });
 
-        await schema.validate(data, { abortEarly: false });
+        await schema.validate(data, { abortEarly: false, strict: true });
+
+        stickyNote.title = title;
+        stickyNote.description = description;
 
         await stickyNotesRepository.save(stickyNote);
 
