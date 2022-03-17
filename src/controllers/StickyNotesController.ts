@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
 import { getRepository } from 'typeorm';
 import StickyNote from '../models/StickyNote';
-import stickyNoteView from '../views/sticky_notes_view'
+import stickyNoteView from '../views/sticky_notes_view';
+import * as Yup from 'yup';
 
 export default {
     async index(req: Request, res: Response) {
@@ -16,7 +17,7 @@ export default {
         const stickyNotesRepository = getRepository(StickyNote);
 
         if (!await stickyNotesRepository.findOne(id)) {
-            return res.status(400).json(Error("Sticky Note doesn't exist").message);
+            return res.status(400).json({ message: "Sticky Note doesn't exist" });
         }
 
         const stickyNote = await stickyNotesRepository.findOneOrFail(id);
@@ -28,7 +29,16 @@ export default {
 
         const stickyNotesRepository = getRepository(StickyNote);
 
-        const stickyNote = stickyNotesRepository.create({ title, description });
+        const data = { title, description };
+
+        const schema = Yup.object().shape({
+            title: Yup.string().required(),
+            description: Yup.string()
+        })
+
+        await schema.validate(data, { abortEarly: false });
+
+        const stickyNote = stickyNotesRepository.create(data);
 
         await stickyNotesRepository.save(stickyNote);
 
@@ -41,11 +51,18 @@ export default {
         const stickyNote = await stickyNotesRepository.findOne(id);
 
         if (!stickyNote) {
-            return res.status(400).json(Error("Sticky Note doesn't exist").message);
+            return res.status(400).json({ message: "Sticky Note doesn't exist" });
         }
 
-        stickyNote.title = title.trim() ? title : stickyNote.title;
-        stickyNote.description = description.trim() ? description : stickyNote.description;
+        const data = { id, title, description };
+
+        const schema = Yup.object().shape({
+            id: Yup.number().required(),
+            title: Yup.string().required(),
+            description: Yup.string().required()
+        });
+
+        await schema.validate(data, { abortEarly: false });
 
         await stickyNotesRepository.save(stickyNote);
 
@@ -56,7 +73,7 @@ export default {
         const stickyNotesRepository = getRepository(StickyNote);
 
         if (!await stickyNotesRepository.findOne(id)) {
-            return res.status(400).json(Error("Sticky Note doesn't exist").message);
+            return res.status(400).json({ message: "Sticky Note doesn't exist" });
         }
 
         await stickyNotesRepository.delete(id);
